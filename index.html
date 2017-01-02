@@ -1,0 +1,105 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0" id="viewport" />
+  <script type="text/javascript" src="https://w.soundcloud.com/player/api.js"></script>
+  <title>SoundCloud Widget Sampler</title>
+</head>
+<body>
+  <iframe id="myplayer" width="100%" height="150" scrolling="no" frameborder="no" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/258264765&amp;auto_play=false&amp;hide_related=true&amp;show_comments=true&amp;show_user=true&amp;show_reposts=false"></iframe>
+  <input type="button" id="play-button" value="play">
+  <input type="button" id="pause-button" value="pause">
+  <input type="text"   id="soundcloudurl" value="" placeholder="soundcloud URL">
+  <input type="button" id="load-button" value="reload">
+  <input type="button" id="play1-button" value="play1">
+  <ul class="widgetOptions">
+    <li><input type="checkbox" checked="checked" id="auto_play"><label for="auto_play">auto_play</label></li>
+    <li><input type="checkbox" checked="checked" id="buying"><label for="buying">buying</label></li>
+    <li><input type="checkbox" checked="checked" id="liking"><label for="liking">liking</label></li>
+    <li><input type="checkbox" checked="checked" id="download"><label for="download">download</label></li>
+    <li><input type="checkbox" checked="checked" id="sharing"><label for="sharing">sharing</label></li>
+    <li><input type="checkbox" checked="checked" id="show_artwork"><label for="show_artwork">show_artwork</label></li>
+    <li><input type="checkbox" checked="checked" id="show_comments"><label for="show_comments">show_comments</label></li>
+    <li><input type="checkbox" checked="checked" id="show_playcount"><label for="show_playcount">show_playcount</label></li>
+    <li><input type="checkbox" checked="checked" id="show_user"><label for="show_user">show_user</label></li>
+    <li><input type="checkbox" checked="checked" id="hide_related"><label for="hide_related">hide_related</label></li>
+    <li><input type="checkbox" id="visual"><label for="visual">visual</label></li>
+    <li><input type="text" value="0" id="start_track"><label for="start_track">start_track</label></li>
+  </ul>
+  <div>
+    <textarea id="textarea" style="width: 100%; height: 200px;"></textarea>
+  </div>
+<script>
+  var forEach = Array.prototype.forEach;
+  var player = SC.Widget('myplayer');
+
+  document.getElementById('play-button').addEventListener('click', function () {
+    player.play();
+  }, false);
+  document.getElementById('pause-button').addEventListener('click', function () {
+    player.pause();
+  }, false);
+  document.getElementById('load-button').addEventListener('click', function () {
+    var url = document.getElementById('soundcloudurl').value.split(/#/)[0];
+    load(url);
+  }, false);
+
+  document.getElementById('play1-button').addEventListener('click', function() {
+    load('https://soundcloud.com/projectsam/symphobia-swashbuckler?in=projectsam/sets/symphobia');
+  }, false);
+
+  var eventKey, eventName;
+  for (eventKey in SC.Widget.Events) {
+    (function(eventName, eventKey) {
+      eventName = SC.Widget.Events[eventKey];
+      player.bind(eventName, function(eventData) {
+        if (eventKey === 'FINISH') {
+          next();
+        } else if (eventKey !== 'PLAY_PROGRESS') {
+          print("SC.Widget.Events." + eventKey +  " " + JSON.stringify(eventData || {}));
+        }
+      });
+    }(eventName, eventKey))
+  }
+
+  function next() {
+    load('https://soundcloud.com/uvi-official/world-suite-by-torley-demo-1');
+  }
+
+  function load(url) {
+    var widgetOptions = getWidgetOptions();
+    widgetOptions.callback = function(){
+      print('Widget is reloaded.')
+      player.getCurrentSound(function(value){
+        print(JSON.stringify(value));
+        print('artwork_url: ' + value.artwork_url);
+        print('description: ' + value.description);
+        print('title: ' + value.title);
+        print('uri: ' + value.uri);
+        print('permalink_url: ' + value.permalink_url);
+        print('genre: ' + value.genre);
+        print('user.username: ' + value.user.username);
+      });
+    };
+    player.load(url, widgetOptions);
+  }
+
+  function getWidgetOptions() {
+    var optionInputs = document.querySelectorAll('.widgetOptions input');
+    var widgetOptions = {};
+    forEach.call(optionInputs, function(option){
+      widgetOptions[option.id] = option.type === 'text' ? option.value : option.checked;
+      print(option.id + ' ' + option.value);
+    });
+    return widgetOptions;
+  }
+
+  function print(o) {
+    var t = document.getElementById('textarea');
+    t.value = o + '\n' + t.value;
+  }
+</script>
+</body>
+</html>
+
